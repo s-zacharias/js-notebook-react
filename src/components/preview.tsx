@@ -19,7 +19,7 @@ const html = `
             } catch (err) {
               const root = document.querySelector('#root');
               root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4>' + err + '</div>';
-              console.err(err);
+              throw err;
             }
           }, false);
         </script>
@@ -32,7 +32,14 @@ const Preview: React.FC<PreviewProps> = ({ code }) => {
 
   useEffect(() => {
     iframe.current.srcdoc = html;
-    iframe.current.contentWindow.postMessage(code, '*');
+
+    const timer = setTimeout(() => {
+      iframe.current.contentWindow.postMessage(code, '*');
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [code]);
 
   return (
