@@ -21,6 +21,24 @@ const initialState: CellsState = {
 
 const reducer = produce((state: CellsState = initialState, action: Action) => {
   switch (action.type) {
+    case ActionType.SAVE_CELLS_ERROR:
+      state.error = action.payload;
+      return state;
+    case ActionType.FETCH_CELLS:
+      state.loading = true;
+      state.error = null;
+      return state;
+    case ActionType.FETCH_CELLS_COMPLETE:
+      state.order = action.payload.map((cell) => cell.id);
+      state.data = action.payload.reduce((acc, cell) => {
+        acc[cell.id] = cell;
+        return acc;
+      }, {} as CellsState['data']);
+      return state;
+    case ActionType.FETCH_CELLS_ERROR:
+      state.loading = false;
+      state.error = action.payload;
+      return state;
     case ActionType.UPDATE_CELL:
       const { id, content } = action.payload;
       state.data[id].content = content;
@@ -34,12 +52,10 @@ const reducer = produce((state: CellsState = initialState, action: Action) => {
       const index = state.order.findIndex((id) => id === action.payload.id);
       const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
-      // handle if the desired movement is outside the bounds of the array
       if (targetIndex < 0 || targetIndex > state.order.length - 1) {
         return state;
       }
 
-      // swap the values
       state.order[index] = state.order[targetIndex];
       state.order[targetIndex] = action.payload.id;
 
